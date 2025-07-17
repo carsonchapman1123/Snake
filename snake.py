@@ -120,6 +120,9 @@ class Snake:
         del self.nodes[-1]
         return tail_node
     
+    def is_moving(self):
+        return self.dir != -1
+    
 class Game:
     def __init__(self, master):
         self.active = True # Boolean value determining if the game is running.
@@ -128,9 +131,7 @@ class Game:
         self.canvas = Tk.Canvas(master, width=WIDTH, height=HEIGHT, bg=BORDER_COLOR)
         # Create area for snake.
         self.canvas.create_rectangle(TILE_WIDTH, TILE_WIDTH, WIDTH - TILE_WIDTH, HEIGHT - TILE_WIDTH, fill=BG_COLOR)
-        # Place the Snake at a random tile that is not on the border.
-        self.snake = Snake(self.canvas, rd.randint(1, X_TILES), rd.randint(1, Y_TILES))
-        # Place an apple at a position that is not in the border or occupied by the snake.
+        self.spawn_snake()
         self.spawn_apple()
         self.canvas.focus_set()
         self.canvas.bind("<Right>", lambda event: self.set_snake_dir(0))
@@ -140,6 +141,19 @@ class Game:
         self.canvas.bind("<Key>", self.reset())
         self.canvas.pack()
         self.move()
+
+    def spawn_snake(self):
+        """
+        Spawns the snake at a random tile.
+        """
+        self.snake = Snake(self.canvas, rd.randint(1, X_TILES), rd.randint(1, Y_TILES))
+
+    def delete_snake(self):
+        """
+        Deletes the snake from the canvas.
+        """
+        for node in self.snake.nodes:
+            self.canvas.delete(node.shape)
 
     def spawn_apple(self):
         """
@@ -180,21 +194,28 @@ class Game:
         """
         if not self.active:
             self.active = True
-            # Delete the game over labels.
-            self.canvas.delete(self.label1)
-            self.canvas.delete(self.label2)
-            for node in self.snake.nodes:
-                self.canvas.delete(node.shape)
+            self.delete_game_over_messages()
+            self.delete_snake()
+            self.spawn_snake()
             self.delete_apple()
-            self.snake = Snake(self.canvas, rd.randint(1, X_TILES), rd.randint(1, Y_TILES))
-            # Place an apple at a position that is not occupied by the snake.
-            new_x = rd.randint(1, X_TILES - 2)
-            new_y = rd.randint(1, Y_TILES - 2)
-            while new_x == self.snake.x and new_y == self.snake.y:
-                new_x = rd.randint(1, X_TILES - 2)
-                new_y = rd.randint(1, Y_TILES - 2)
-            self.apple = Apple(self.canvas, new_x, new_y)
+            self.spawn_apple()
+
     
+    def display_game_over_message(self):
+        """
+        Displays the game over message at the end of the game.
+        """
+        self.game_over_message1 = self.canvas.create_text(WIDTH // 2, HEIGHT // 2, text=f"Game over! Final length: {len(self.snake.nodes)}", fill="black")
+        self.game_over_message2 = self.canvas.create_text(WIDTH // 2, HEIGHT // 2 + 20, text="Press any key to play again!", fill="black")
+    
+
+    def delete_game_over_messages(self):
+        self.canvas.delete(self.game_over_message1)
+        self.canvas.delete(self.game_over_message2)
+
+    def make_snake_head_orange(self):
+        self.canvas.delete(self.snake.nodes[0].shape)
+        self.snake.nodes[0].shape = self.canvas.create_rectangle(self.snake.nodes[0].x * TILE_WIDTH, self.snake.nodes[0].y * TILE_WIDTH, (self.snake.nodes[0].x + 1) * TILE_WIDTH, (self.snake.nodes[0].y + 1) * TILE_WIDTH, fill=GAME_OVER_COLOR)
 
     def move(self):
         """
@@ -202,18 +223,14 @@ class Game:
         snake, checks for collisions, and handles game over.
         """
         if self.active:
-            current_dir = self.snake.dir
-            if current_dir != -1:
+            if self.snake.is_moving():
                 tail_node = self.snake.pop_tail_node()
                 in_collision = self.snake.move_and_check_for_collision()
                 if in_collision:
                     self.active = False
                     # Draw an orange square on the snake's head to indicate where game ending collision occurred.
-                    self.canvas.delete(self.snake.nodes[0].shape)
-                    self.snake.nodes[0].shape = self.canvas.create_rectangle(self.snake.nodes[0].x * TILE_WIDTH, self.snake.nodes[0].y * TILE_WIDTH, (self.snake.nodes[0].x + 1) * TILE_WIDTH, (self.snake.nodes[0].y + 1) * TILE_WIDTH, fill=GAME_OVER_COLOR)
-                    # Add game over messages.
-                    self.label1 = self.canvas.create_text(WIDTH // 2, HEIGHT // 2, text=f"Game over! Final length: {len(self.snake.nodes)}", fill="black")
-                    self.label2 = self.canvas.create_text(WIDTH // 2, HEIGHT // 2 + 20, text="Press any key to play again!", fill="black")
+                    self.make_snake_head_orange()
+                    self.display_game_over_message()
                 else:
                     if self.is_snake_colliding_with_apple():
                         self.snake.nodes.append(tail_node)
