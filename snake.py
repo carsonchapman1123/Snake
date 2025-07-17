@@ -3,18 +3,18 @@ import tkinter as Tk
 
 
 # GLOBAL CONSTANTS:
-FRAMES_PER_SECOND = 5 # The number of snake updates per second.
-TILE_WIDTH = 42 # The width of each tile on the game board.
-X_TILES = 15 # The number of horizontal tiles on the board, not including the border.
-Y_TILES = 15 # The number of vertical tiles on the board, not including the border.
-WIDTH = TILE_WIDTH * X_TILES + 2 * TILE_WIDTH # The overall width of the game window.
-HEIGHT = TILE_WIDTH * Y_TILES + 2 * TILE_WIDTH # The overall height of the game window.
-BORDER_COLOR = "black" # The color of the border.
-BG_COLOR = "white" # The color of where the snake moves around.
-APPLE_COLOR = "green" # The color of an Apple.
-SNAKE_COLOR = "red" # The color of the Snake.
-GAME_OVER_COLOR = "orange" # The color of a SnakeNode that causes gameover.
-TEXT_COLOR = "black" # The color of displayed text.
+FRAMES_PER_SECOND = 5  # The number of snake updates per second.
+TILE_WIDTH = 42  # The width of each tile on the game board.
+X_TILES = 15  # The number of horizontal tiles on the board, not including the border.
+Y_TILES = 15  # The number of vertical tiles on the board, not including the border.
+WIDTH = TILE_WIDTH * X_TILES + 2 * TILE_WIDTH  # The overall width of the game window.
+HEIGHT = TILE_WIDTH * Y_TILES + 2 * TILE_WIDTH  # The overall height of the game window.
+BORDER_COLOR = "black"  # The color of the border.
+BG_COLOR = "white"  # The color of where the snake moves around.
+APPLE_COLOR = "green"  # The color of an Apple.
+SNAKE_COLOR = "red"  # The color of the Snake.
+GAME_OVER_COLOR = "orange"  # The color of a SnakeNode that causes gameover.
+TEXT_COLOR = "black"  # The color of displayed text.
 
 
 class Apple:
@@ -22,7 +22,13 @@ class Apple:
         self.canvas = canvas
         self.x = x
         self.y = y
-        self.shape = self.canvas.create_oval(self.x * TILE_WIDTH, self.y * TILE_WIDTH, (self.x + 1) * TILE_WIDTH, (self. y + 1) * TILE_WIDTH, fill=APPLE_COLOR)
+        self.shape = self.canvas.create_oval(
+            self.x * TILE_WIDTH,
+            self.y * TILE_WIDTH,
+            (self.x + 1) * TILE_WIDTH,
+            (self.y + 1) * TILE_WIDTH,
+            fill=APPLE_COLOR,
+        )
 
 
 class SnakeNode:
@@ -30,7 +36,13 @@ class SnakeNode:
         self.canvas = canvas
         self.x = x
         self.y = y
-        self.shape = self.canvas.create_rectangle(self.x * TILE_WIDTH, self.y * TILE_WIDTH, (self.x + 1) * TILE_WIDTH, (self.y + 1) * TILE_WIDTH, fill=SNAKE_COLOR)
+        self.shape = self.canvas.create_rectangle(
+            self.x * TILE_WIDTH,
+            self.y * TILE_WIDTH,
+            (self.x + 1) * TILE_WIDTH,
+            (self.y + 1) * TILE_WIDTH,
+            fill=SNAKE_COLOR,
+        )
 
 
 class Snake:
@@ -43,7 +55,7 @@ class Snake:
         # -1 is not moving, 0 is right, 1 is up, 2 is left, 3 is down
         # Initialize the Snake as standing still to make it more user friendly.
         self.dir = -1
-    
+
     def contains(self, x, y):
         """
         Returns True if the Snake contains a SnakeNode at the grid position (x, y),
@@ -53,7 +65,7 @@ class Snake:
             if node.x == x and node.y == y:
                 return True
         return False
-    
+
     def set_dir(self, dir):
         """
         Sets the Snake's direction to dir as long as the Snake's length is 1
@@ -85,7 +97,7 @@ class Snake:
                 self.dir = dir
             elif dir == 3 and y_diff != -1:
                 self.dir = dir
-    
+
     def move_and_check_for_collision(self) -> bool:
         """
         Moves the snake in the current direction. Returns True
@@ -113,24 +125,35 @@ class Snake:
             collided = True
         self.nodes = [SnakeNode(self.canvas, self.x, self.y)] + self.nodes
         return collided
-    
+
     def pop_tail_node(self):
+        """
+        Removes the last node in the list, removes it from the canvas,
+        and returns the removed last node object.
+        """
         tail_node = self.nodes[-1]
         self.canvas.delete(tail_node.shape)
         del self.nodes[-1]
         return tail_node
-    
+
     def is_moving(self):
         return self.dir != -1
-    
+
+
 class Game:
     def __init__(self, master):
-        self.active = True # Boolean value determining if the game is running.
+        self.active = True  # Boolean value determining if the game is running.
         self.master = master
         # Create background.
         self.canvas = Tk.Canvas(master, width=WIDTH, height=HEIGHT, bg=BORDER_COLOR)
         # Create area for snake.
-        self.canvas.create_rectangle(TILE_WIDTH, TILE_WIDTH, WIDTH - TILE_WIDTH, HEIGHT - TILE_WIDTH, fill=BG_COLOR)
+        self.canvas.create_rectangle(
+            TILE_WIDTH,
+            TILE_WIDTH,
+            WIDTH - TILE_WIDTH,
+            HEIGHT - TILE_WIDTH,
+            fill=BG_COLOR,
+        )
         self.spawn_snake()
         self.spawn_apple()
         self.canvas.focus_set()
@@ -171,7 +194,7 @@ class Game:
         Deletes the apple from the canvas.
         """
         self.canvas.delete(self.apple.shape)
-    
+
     def set_snake_dir(self, dir):
         """
         This function is only here to allow the arrow keys
@@ -187,7 +210,7 @@ class Game:
         Returns whether or not the snake is colliding with the apple.
         """
         return self.snake.x == self.apple.x and self.snake.y == self.apple.y
-    
+
     def reset(self):
         """
         Resets the game after a game over.
@@ -200,22 +223,43 @@ class Game:
             self.delete_apple()
             self.spawn_apple()
 
-    
     def display_game_over_message(self):
         """
         Displays the game over message at the end of the game.
         """
-        self.game_over_message1 = self.canvas.create_text(WIDTH // 2, HEIGHT // 2, text=f"Game over! Final length: {len(self.snake.nodes)}", fill="black")
-        self.game_over_message2 = self.canvas.create_text(WIDTH // 2, HEIGHT // 2 + 20, text="Press any key to play again!", fill="black")
-    
+        self.game_over_message1 = self.canvas.create_text(
+            WIDTH // 2,
+            HEIGHT // 2,
+            text=f"Game over! Final length: {len(self.snake.nodes)}",
+            fill="black",
+        )
+        self.game_over_message2 = self.canvas.create_text(
+            WIDTH // 2,
+            HEIGHT // 2 + 20,
+            text="Press any key to play again!",
+            fill="black",
+        )
 
     def delete_game_over_messages(self):
+        """
+        Removes the game over messages from the canvas.
+        """
         self.canvas.delete(self.game_over_message1)
         self.canvas.delete(self.game_over_message2)
 
     def make_snake_head_orange(self):
+        """
+        Makes the head of the snake orange. This is done during a game over
+        in order to indicate where the collision occurred.
+        """
         self.canvas.delete(self.snake.nodes[0].shape)
-        self.snake.nodes[0].shape = self.canvas.create_rectangle(self.snake.nodes[0].x * TILE_WIDTH, self.snake.nodes[0].y * TILE_WIDTH, (self.snake.nodes[0].x + 1) * TILE_WIDTH, (self.snake.nodes[0].y + 1) * TILE_WIDTH, fill=GAME_OVER_COLOR)
+        self.snake.nodes[0].shape = self.canvas.create_rectangle(
+            self.snake.nodes[0].x * TILE_WIDTH,
+            self.snake.nodes[0].y * TILE_WIDTH,
+            (self.snake.nodes[0].x + 1) * TILE_WIDTH,
+            (self.snake.nodes[0].y + 1) * TILE_WIDTH,
+            fill=GAME_OVER_COLOR,
+        )
 
     def move(self):
         """
@@ -228,7 +272,6 @@ class Game:
                 in_collision = self.snake.move_and_check_for_collision()
                 if in_collision:
                     self.active = False
-                    # Draw an orange square on the snake's head to indicate where game ending collision occurred.
                     self.make_snake_head_orange()
                     self.display_game_over_message()
                 else:
@@ -238,10 +281,12 @@ class Game:
                         self.spawn_apple()
         self.master.after(1000 // FRAMES_PER_SECOND, self.move)
 
+
 def main():
     root = Tk.Tk()
     Game(root)
     root.mainloop()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
