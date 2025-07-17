@@ -1,3 +1,7 @@
 # Snake
-
-This was the final project for PIC 16: Python Programming at UCLA. It is an emulation of the classic arcade game snake. I received 105% on the assignment.
+This was a homework assignment went I was taking Python programming at UCLA. It can be run using the following commands:
+```bash
+git clone https://github.com/carsonchapman1123/Snake/
+cd Snake
+python snake.py
+```
